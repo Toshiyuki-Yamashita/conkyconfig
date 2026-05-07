@@ -1,1 +1,4 @@
 .vscode/*
+conf/theme.*.lua
+!conf/theme.defaults.lua
+!conf/theme.local.example.lua

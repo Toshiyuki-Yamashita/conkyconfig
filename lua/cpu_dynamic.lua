@@ -1,3 +1,6 @@
+local conky_dir = os.getenv("HOME") .. "/.config/conky"
+local theme = dofile(conky_dir .. "/theme.lua")
+
 local function get_logical_cpu_count()
     local count = 0
     for line in io.lines('/proc/stat') do
@@ -37,27 +40,31 @@ local function get_core_indices_from_sensors()
     return indices
 end
 
+local function cpu_graph(index)
+    return string.format(
+        '${color %s}%d:${cpu cpu%d}%%${cpugraph cpu%d %d,%d %s %s}',
+        theme.colors.label,
+        index,
+        index,
+        index,
+        theme.layout.graph_height,
+        theme.layout.cpu_graph_width,
+        theme.colors.graph_background,
+        theme.colors.graph_foreground
+    )
+end
+
 function conky_cpu_usage_lines()
     local max_cpu = get_logical_cpu_count()
     local lines = {}
     local i = 1
 
     while i <= max_cpu do
-        local left = string.format(
-            '${color grey}%d:${cpu cpu%d}%%${cpugraph cpu%d 20,130 000000 ffffff}',
-            i,
-            i,
-            i
-        )
+        local left = cpu_graph(i)
 
         local right = ''
         if i + 1 <= max_cpu then
-            right = string.format(
-                ' ${color grey}%d:${cpu cpu%d}%%${cpugraph cpu%d 20,130 000000 ffffff}',
-                i + 1,
-                i + 1,
-                i + 1
-            )
+            right = ' ' .. cpu_graph(i + 1)
         end
 
         table.insert(lines, ' ' .. left .. right)
@@ -81,10 +88,13 @@ function conky_core_temp_lines()
     for _, core_index in ipairs(core_indices) do
         local cpu_index = core_index + 1
         local line = string.format(
-            " ${color grey}Core %d: ${freq_g %d}GHz ${execi 5 sensors | grep 'Core %d' | cut -c16-20}${font \"IBM Plex Sans JP\":size=8}C $font",
+            " ${color %s}Core %d: ${freq_g %d}GHz ${execi 5 sensors | grep 'Core %d' | cut -c16-20}%s%s $font",
+            theme.colors.label,
             core_index,
             cpu_index,
-            core_index
+            core_index,
+            theme.font.symbol.conky,
+            theme.text.cpu_temperature_unit
         )
         table.insert(lines, line)
     end
