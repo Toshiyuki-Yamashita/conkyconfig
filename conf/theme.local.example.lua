@@ -15,4 +15,7 @@ return {
     --     gap_x = 20,
     --     gap_y = 40,
     -- },
+    -- network = {
+    --     interface = 'wlan0',
+    -- },
 }

@@ -35,6 +35,9 @@ return {
         cpu_graph_width = 130,
         fs_bar_height = 6,
     },
+    network = {
+        interface = 'enp3s0',
+    },
     text = {
         temperature_unit = '℃',
         cpu_temperature_unit = 'C',
