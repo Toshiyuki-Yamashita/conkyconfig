@@ -76,23 +76,25 @@ end
 
 function conky_core_temp_lines()
     local core_indices = get_core_indices_from_sensors()
+    local logical_cpu_count = get_logical_cpu_count()
 
     if #core_indices == 0 then
-        local fallback_cores = math.max(1, math.floor(get_logical_cpu_count() / 2))
+        local fallback_cores = math.max(1, math.floor(logical_cpu_count / 2))
         for i = 0, fallback_cores - 1 do
             table.insert(core_indices, i)
         end
     end
 
     local lines = {}
-    for _, core_index in ipairs(core_indices) do
-        local cpu_index = core_index + 1
+    for sensor_position, sensor_core_index in ipairs(core_indices) do
+        local display_core_index = sensor_position - 1
+        local cpu_index = math.min(sensor_position, logical_cpu_count)
         local line = string.format(
-            " ${color %s}Core %d: ${freq_g %d}GHz ${execi 5 sensors | grep 'Core %d' | cut -c16-20}%s%s $font",
+            " ${color %s}Core %d: ${freq_g %d}GHz ${execi 5 sensors | awk '/Core[[:space:]]+%d:/{print substr($0,16,5); exit}'}%s%s $font",
             theme.colors.label,
-            core_index,
+            display_core_index,
             cpu_index,
-            core_index,
+            sensor_core_index,
             theme.font.symbol.conky,
             theme.text.cpu_temperature_unit
         )
